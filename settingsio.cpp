@@ -1,11 +1,12 @@
 #include "settingsio.h"
 
-void SettingsIO::read()
+
+QVector<Preset> SettingsIO::readPresets()
 {
-    return;
+    return settings.value(PRESETS_KEY).value<QVector<Preset>>();
 }
 
-void SettingsIO::write()
+void SettingsIO::writePresets(QVector<Preset> presets)
 {
-    return;
+    settings.setValue(PRESETS_KEY, QVariant::fromValue(presets));
 }

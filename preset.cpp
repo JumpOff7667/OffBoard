@@ -34,3 +34,15 @@ void Preset::deleteSound(QString& name) {
     this->sounds.erase(std::remove_if(this->sounds.begin(), this->sounds.end(), [name](Sound s) { return s.getName() == name; }),
               this->sounds.end());
 }
+
+QDataStream& operator<<(QDataStream& out, const Preset& preset) {
+    out << preset.name;
+    out << preset.sounds;
+    return out;
+}
+
+QDataStream& operator>>(QDataStream& in, Preset& preset) {
+    in >> preset.name;
+    in >> preset.sounds;
+    return in;
+}

@@ -10,11 +10,13 @@
 #include <QSettings>
 #include <QInputDialog>
 #include <QListWidget>
+#include <QDebug>
 
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
+    , pm(PresetsManager())
     , cm(ConfigManager())
     , player(SoundboardPlayer())
     , configAction(QAction(this))
@@ -27,6 +29,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     addConfigure();
     connectWidgets();
+
+    refreshPresetsList();
+    refreshSoundsList();
+
+    for (Preset& preset : pm.getPresets()) {
+        qDebug().nospace() << "Preset name: " << qUtf8Printable(preset.getName());
+        qDebug("Sounds :");
+        for (Sound& s : preset.getSounds()) {
+            qDebug().nospace() << "Name: " << qUtf8Printable(s.getName()) << ", Path: " << qUtf8Printable(s.getPath().toString());
+        }
+    }
 }
 
 MainWindow::~MainWindow()
@@ -72,6 +85,19 @@ void MainWindow::refreshSoundsList()
     for (Sound &s : currentPresetSounds) {
         ui->soundsList->addItem(s.getName());
     }
+
+    pm.savePresets();
+}
+
+void MainWindow::refreshPresetsList()
+{
+    ui->presetsList->clear();
+
+    for (Preset &p : pm.getPresets()) {
+        ui->presetsList->addItem(p.getName());
+    }
+
+    pm.savePresets();
 }
 
 void MainWindow::deletePreset()
@@ -80,6 +106,7 @@ void MainWindow::deletePreset()
 
     pm.deletePreset(currentPresetName);
     deletePresetFromList();
+    refreshPresetsList();
     refreshSoundsList();
 }
 
@@ -132,14 +159,15 @@ void MainWindow::addConfigure()
 
 void MainWindow::connectWidgets()
 {
-    connect(ui->actionExit,      SIGNAL(triggered()),                         this, SLOT(exitApp()));
-    connect(ui->presetsList,     SIGNAL(customContextMenuRequested(QPoint)),  this, SLOT(showPresetContextMenu(QPoint)));
-    connect(ui->actionNewPreset, SIGNAL(triggered()),                         this, SLOT(createNewPreset()));
-    connect(&configAction,       SIGNAL(triggered()),                         this, SLOT(showConfigure()));
-    connect(ui->soundsList,      SIGNAL(itemDoubleClicked(QListWidgetItem*)), this, SLOT(playSound(QListWidgetItem*)));
-    connect(ui->soundsList,      SIGNAL(customContextMenuRequested(QPoint)),  this, SLOT(showSoundContextMenu(QPoint)));
-    connect(&soundDialog,        SIGNAL(finished(int)),                       this, SLOT(onSoundDialogFinished(int)));
-    connect(&configDialog,       SIGNAL(finished(int)),                       this, SLOT(updateDevices(int)));
+    connect(ui->actionExit,      SIGNAL(triggered()),                                            this, SLOT(exitApp()));
+    connect(ui->presetsList,     SIGNAL(customContextMenuRequested(QPoint)),                     this, SLOT(showPresetContextMenu(QPoint)));
+    connect(ui->presetsList,     SIGNAL(currentItemChanged(QListWidgetItem*,QListWidgetItem*)),  this, SLOT(refreshSoundsList()));
+    connect(ui->actionNewPreset, SIGNAL(triggered()),                                            this, SLOT(createNewPreset()));
+    connect(&configAction,       SIGNAL(triggered()),                                            this, SLOT(showConfigure()));
+    connect(ui->soundsList,      SIGNAL(itemDoubleClicked(QListWidgetItem*)),                    this, SLOT(playSound(QListWidgetItem*)));
+    connect(ui->soundsList,      SIGNAL(customContextMenuRequested(QPoint)),                     this, SLOT(showSoundContextMenu(QPoint)));
+    connect(&soundDialog,        SIGNAL(finished(int)),                                          this, SLOT(onSoundDialogFinished(int)));
+    connect(&configDialog,       SIGNAL(finished(int)),                                          this, SLOT(updateDevices(int)));
 }
 
 void MainWindow::exitApp()
@@ -177,11 +205,6 @@ void MainWindow::playSound(QListWidgetItem* item)
     player.play();
 }
 
-void MainWindow::addPresetToList(QString name)
-{
-    new QListWidgetItem(name, ui->presetsList);
-}
-
 void MainWindow::deletePresetFromList()
 {
     QList<QListWidgetItem*> items = ui->presetsList->selectedItems();
@@ -205,10 +228,9 @@ void MainWindow::createNewPreset()
         Preset newPreset = Preset(presetName);
 
         pm.addPreset(newPreset);
-        addPresetToList(presetName);
+        refreshPresetsList();
     }
 }
-
 
 void MainWindow::selectPreset(QListWidgetItem *item)
 {
@@ -222,4 +244,3 @@ void MainWindow::selectPreset(QListWidgetItem *item)
         new QListWidgetItem(sound.getName(), ui->soundsList);
     }
 }
-

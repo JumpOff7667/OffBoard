@@ -1,17 +1,24 @@
 #include "presetsmanager.h"
+#include "settingsio.h"
 
 PresetsManager::PresetsManager()
 {
-    loadStoredPresets();
+    loadPresets();
 }
 
 void PresetsManager::addPreset(Preset preset)
 {
     presets.append(preset);
+}
 
-//    QSettings settings;
-//    settings.setValue("presetsManager/presets", QVariant::fromValue(*(presets)));
-//    settings.sync();
+void PresetsManager::setPresets(QVector<Preset>& presets)
+{
+    this->presets = presets;
+}
+
+void PresetsManager::setPresets(QVector<Preset>&& presets)
+{
+    this->presets = presets;
 }
 
 void PresetsManager::addSoundToPreset(QString presetName, QString soundName, QUrl soundPath)
@@ -52,12 +59,12 @@ QVector<Preset>& PresetsManager::getPresets()
     return presets;
 }
 
-void PresetsManager::loadStoredPresets()
+void PresetsManager::loadPresets()
 {
-//    QSettings settings;
-//    QVector<Preset> presets = settings.value("presetsManager/presets").value<QVector<Preset>>();
+    setPresets(SettingsIO::getInstance().readPresets());
+}
 
-//    if (!presets.isEmpty()) {
-//        *(presets) = presets;
-//    }
+void PresetsManager::savePresets()
+{
+    SettingsIO::getInstance().writePresets(presets);
 }

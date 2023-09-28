@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-
 #include <QApplication>
 #include <QLocale>
 #include <QTranslator>
@@ -28,6 +27,9 @@ QPalette getDarkPalette()
 
 int main(int argc, char *argv[])
 {
+    qRegisterMetaType<QList<Preset>>("Presets");
+    qRegisterMetaType<QList<Sound>>("Sounds");
+
     QApplication a(argc, argv);
     a.setStyle("fusion");
     a.setPalette(getDarkPalette());

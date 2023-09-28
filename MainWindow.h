@@ -35,9 +35,9 @@ private:
 
     void addConfigure();
     void connectWidgets();
-    void addPresetToList(QString);
+    //void addPresetToList(QString);
     void deletePresetFromList();
-    void refreshSoundsList();
+    void refreshPresetsList();
     void setupSoundDialog();
 
 private slots:
@@ -53,6 +53,7 @@ private slots:
     void showPresetContextMenu(const QPoint&);
     void showSoundContextMenu(const QPoint&);
     void updateDevices(int);
+    void refreshSoundsList();
 };
 
 #endif // MAINWINDOW_H
